@@ -1,0 +1,18 @@
+.uploadContainer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.contractTypes {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: flex-start;
+}
+
+.fileName {
+    margin-left: 24px;
+    margin-right: 24px;
+}
