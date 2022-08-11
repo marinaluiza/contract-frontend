@@ -57,6 +57,7 @@ const Upload = () => {
             component="label"
             disabled={!file}
             onClick={upload}
+            className="uploadButton"
           >
             Upload
           </Button>

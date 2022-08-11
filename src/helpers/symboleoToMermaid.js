@@ -14,12 +14,14 @@ export const createDiagram = (contractDiagram) => {
         transition.target === "suspended") ||
       (transition.source === "suspended" && transition.target === "in_effect")
     ) {
-      stateActive.push(formattedTransition)
+      stateActive.push(formattedTransition);
     } else {
-        transitions.push(formattedTransition)
+      if (!notHasTransition(key, transition?.powers)) {
+        transitions.push(formattedTransition);
+      }
     }
   });
-  stateActive.push("}")
+  stateActive.push("}");
   transitions.push(`successful_termination --> [*]`);
   transitions.push(`unsuccessful_termination --> [*]`);
   const arrayStateNotes = Object.entries(contractDiagram.states).map(
@@ -32,11 +34,16 @@ export const createDiagram = (contractDiagram) => {
         descriptionDetails = `${descriptionDetails}<br><br>`;
       }
 
-      return `${key} : ${descriptionDetails}<strong>${state}<strong>`;
+      return `${key} : ${descriptionDetails}<b>${state}</b>`;
     }
   );
 
-  diagramStringArray = [...diagramStringArray, ...stateActive, ...transitions, ...arrayStateNotes];
+  diagramStringArray = [
+    ...diagramStringArray,
+    ...stateActive,
+    ...transitions,
+    ...arrayStateNotes,
+  ];
 
   return diagramStringArray.join("\r\n");
 };
@@ -45,9 +52,12 @@ const createEvent = (transition) => {
   const events = transition.events.map((event) => {
     const actions = formatValues(transition, event?.actions);
     const formattedEvent = formatValues(transition, [event?.event]);
-    return `${formattedEvent} ${event.guard ? "[" + event.guard + "]" : ""}${
-      actions && ` / ${actions}`
+    const eventWithGuard = `${formattedEvent} ${
+      event.guard ? "[" + event.guard + "]" : ""
     }`;
+    return eventWithGuard.trim() !== ""
+      ? `${eventWithGuard}${actions && ` / ${actions}`}`
+      : "";
   });
   return events.join("<br>");
 };
@@ -72,7 +82,7 @@ const formatValues = (event, values = []) => {
           fill = event[name];
         }
 
-        const formatted = value.replace("${" + name + "}", `<strong>${fill}</strong>`);
+        const formatted = value.replace("${" + name + "}", `<b>${fill}</b>`);
         formattedValues.push(formatted);
       }
     } else {
@@ -86,4 +96,8 @@ const formatValues = (event, values = []) => {
 const createDescription = (state) => {
   const action = formatValues(state, [state?.action]);
   return `${state.when} / ${action}`;
+};
+
+const notHasTransition = (key, powers) => {
+  return ["assign_party", "revoke_party"].includes(key) && powers?.length === 0;
 };
