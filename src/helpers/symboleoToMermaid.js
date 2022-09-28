@@ -1,4 +1,5 @@
 export const createDiagram = (contractDiagram) => {
+  debugger;
   let diagramStringArray = [];
   let transitions = [];
   let stateActive = [];
@@ -10,13 +11,11 @@ export const createDiagram = (contractDiagram) => {
       transition.source === "initial" ? "[*]" : transition.source
     } --> ${transition.target}${event && `: ${event}`}`;
     if (
-      (transition.source === "in_effect" &&
-        transition.target === "suspended") ||
-      (transition.source === "suspended" && transition.target === "in_effect")
+      transition.source === "in_effect" && transition.target === "in_effect"
     ) {
-      stateActive.push(formattedTransition);
+        stateActive.push(formattedTransition);
     } else {
-      if (!notHasTransition(key, transition?.powers)) {
+      if (!notHasTransition(key, transition) && key !== "") {
         transitions.push(formattedTransition);
       }
     }
@@ -24,17 +23,19 @@ export const createDiagram = (contractDiagram) => {
   stateActive.push("}");
   transitions.push(`successful_termination --> [*]`);
   transitions.push(`unsuccessful_termination --> [*]`);
-  const arrayStateNotes = Object.entries(contractDiagram.states).map(
+  //remover hardcoded states
+  const arrayStateNotes = Object.entries(contractDiagram.states).filter(([key]) => key !== "unassign" && key !== "suspended").map(
     ([key, state]) => {
-      let descriptionDetails = "";
-      if (contractDiagram.state_actions[key]) {
-        descriptionDetails = createDescription(
-          contractDiagram.state_actions[key]
-        );
-        descriptionDetails = `${descriptionDetails}<br><br>`;
-      }
-
-      return `${key} : ${descriptionDetails}<b>${state}</b>`;
+        let descriptionDetails = "";
+        if (contractDiagram.state_actions[key]) {
+          descriptionDetails = createDescription(
+            contractDiagram.state_actions[key]
+          );
+          descriptionDetails = `${descriptionDetails}<br><br>`;
+        }
+  
+        return `${key} : ${descriptionDetails}<b>${state}</b>`;
+      
     }
   );
 
@@ -98,6 +99,7 @@ const createDescription = (state) => {
   return `${state.when} / ${action}`;
 };
 
-const notHasTransition = (key, powers) => {
-  return ["assign_party", "revoke_party"].includes(key) && powers?.length === 0;
+const notHasTransition = (key, {powers, obligations_activated, powers_activated}) => {
+  return (["assign_party", "revoke_party"].includes(key) && powers?.length === 0) || 
+    (["suspend_contract", "resume_contract"].includes(key) && powers?.length === 0 && (obligations_activated?.length === 0 || obligations_activated?.[0] === '') && (powers_activated?.length === 0|| powers_activated?.[0] === ''));
 };
