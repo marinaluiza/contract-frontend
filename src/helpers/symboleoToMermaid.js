@@ -24,7 +24,7 @@ export const createDiagram = (contractDiagram) => {
   transitions.push(`successful_termination --> [*]`);
   transitions.push(`unsuccessful_termination --> [*]`);
   //remover hardcoded states
-  const arrayStateNotes = Object.entries(contractDiagram.states).filter(([key]) => key !== "unassign" && key !== "suspended").map(
+  const arrayStateNotes = Object.entries(contractDiagram.states).map(
     ([key, state]) => {
         let descriptionDetails = "";
         if (contractDiagram.state_actions[key]) {
